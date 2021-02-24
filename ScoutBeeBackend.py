@@ -6,27 +6,27 @@ data=pd.read_csv('blogdata_entire_data_6000.csv')
 import json
 from sentence_transformers import SentenceTransformer
 import scipy.spatial
-import pickle as pkl
-import json
+
+#Using BERT pretrained model to embedd the text into vectors
 embedder= SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-
+#Reading the corpus embedding pickle file
 with open('CorpusEmbeddings.pkl','rb') as f:
      corpus_embeddings= pkl.load(f)
 
 @app.route('/search/', methods=['GET'])
 def get_fiiles():
     search_query = request.args['search_query']
-    # Query sentences:
+    # Embedding query into vectors using above model
     queries = [search_query]
     query_embeddings = embedder.encode(queries,show_progress_bar=True)
 
     # Find the closest 5 sentences of the corpus for each query sentence based on cosine similarity
     closest_n = 10
-    print("\nTop 5 most similar sentences in corpus:")
+    print("\nTop most similar sentences in corpus:")
     final_result = []
     for query, query_embedding in zip(queries, query_embeddings):
         distances = scipy.spatial.distance.cdist([query_embedding], corpus_embeddings, "cosine")[0]
